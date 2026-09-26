@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>คลังเจ๋งแจ๋ว — ระบบจัดการร้าน</title>
+<style>
+:root{--red:#e51b23;--red2:#ff3b30;--gold:#f6c453;--gold2:#ffe7a0;--bg:#160405;--panel:rgba(35,8,10,.88);--panel2:rgba(53,10,13,.92);--text:#fff5df;--muted:#cdb8a0;--green:#23d18b;--yellow:#ffc44d;--danger:#ff5b5b;--border:rgba(246,196,83,.35)}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:system-ui,-apple-system,"Noto Sans Thai",sans-serif;color:var(--text);background:#180506}
+body{overflow-x:hidden}
+#scene{position:fixed;inset:0;z-index:-5;overflow:hidden;background:linear-gradient(180deg,#180406,#3a0a0c 48%,#100204)}
+#scene.day{background:linear-gradient(180deg,#6f1c17 0%,#c94c24 42%,#f1a24c 100%)}
+#scene:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 75% 15%,rgba(255,216,113,.55),transparent 18%),radial-gradient(circle at 25% 20%,rgba(255,73,37,.25),transparent 25%)}
+.sun,.moon{position:absolute;border-radius:50%;transition:1s;filter:blur(.2px)}
+.sun{width:110px;height:110px;right:10%;top:8%;background:#ffe69a;box-shadow:0 0 60px #ffd36a}
+.moon{width:90px;height:90px;right:12%;top:10%;background:#fff5cf;box-shadow:0 0 55px #fff0b5;opacity:0}
+.night .sun{opacity:0}.night .moon{opacity:1}
+.cloud{position:absolute;width:220px;height:50px;background:rgba(255,235,198,.16);border-radius:60px;filter:blur(2px);animation:cloud 35s linear infinite}
+.cloud:before,.cloud:after{content:"";position:absolute;background:inherit;border-radius:50%}.cloud:before{width:80px;height:80px;left:35px;top:-40px}.cloud:after{width:110px;height:90px;left:100px;top:-50px}
+.c1{top:18%;left:-250px}.c2{top:40%;left:-350px;animation-duration:50s;animation-delay:-15s;transform:scale(.7)}@keyframes cloud{to{transform:translateX(125vw)}}
+.lantern{position:absolute;top:-10px;width:46px;height:66px;border-radius:50%;background:linear-gradient(90deg,#b20d14,#ff3b30,#b20d14);border:2px solid #ffd66e;box-shadow:0 8px 25px rgba(255,62,30,.55);animation:sway 3s ease-in-out infinite}
+.lantern:before{content:"";position:absolute;left:19px;top:-60px;width:2px;height:60px;background:#d7ad52}.lantern:after{content:"福";position:absolute;inset:14px 0 0;text-align:center;color:#ffeaa5;font-size:22px;font-weight:800}
+.l1{left:12%;}.l2{left:88%;animation-delay:-1.5s}@keyframes sway{50%{transform:rotate(5deg) translateY(5px)}}
+.coins{position:absolute;inset:0;pointer-events:none}.coin{position:absolute;width:18px;height:18px;border-radius:50%;border:3px solid #ffd66e;opacity:.4;animation:float 8s linear infinite}.coin:nth-child(1){left:8%;top:70%}.coin:nth-child(2){left:78%;top:65%;animation-delay:-3s}.coin:nth-child(3){left:55%;top:30%;animation-delay:-5s}@keyframes float{50%{transform:translateY(-30px) rotate(180deg)}100%{transform:translateY(0) rotate(360deg)}}
+
+.app{display:grid;grid-template-columns:245px 1fr;min-height:100vh}
+.sidebar{position:sticky;top:0;height:100vh;padding:18px 14px;background:rgba(24,3,5,.82);backdrop-filter:blur(16px);border-right:1px solid var(--border);z-index:5}
+.brand{padding:14px;text-align:center;border:1px solid var(--border);border-radius:18px;background:linear-gradient(145deg,rgba(255,55,39,.18),rgba(246,196,83,.06));margin-bottom:16px}
+.brand .god{font-size:42px}.brand h1{font-size:23px;margin:3px 0;color:#ffe8a4}.brand small{color:#ffbdb2}
+.nav{display:grid;gap:7px}.nav button{border:0;background:transparent;color:var(--text);padding:12px;border-radius:12px;text-align:left;font-size:15px;cursor:pointer}.nav button:hover,.nav button.active{background:linear-gradient(90deg,#ef2027,#a80e15);box-shadow:0 8px 20px rgba(220,25,25,.2)}
+.sidebar .quote{margin-top:20px;padding:15px;border:1px dashed var(--border);border-radius:14px;color:#ffdca0;text-align:center}
+main{padding:20px;min-width:0}.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}.title h2{margin:0;font-size:25px}.title p{margin:4px 0;color:var(--muted)}
+.actions{display:flex;gap:8px;flex-wrap:wrap}.btn{border:1px solid var(--border);color:#fff;background:#3a1013;padding:10px 14px;border-radius:11px;cursor:pointer}.btn.primary{background:linear-gradient(135deg,#ff3b30,#b90f17);border-color:#ff6c56}.btn.gold{background:linear-gradient(135deg,#e8a72f,#8d5c12);color:#fff}.btn:hover{filter:brightness(1.12)}
+.grid{display:grid;gap:14px}.stats{grid-template-columns:repeat(4,minmax(0,1fr))}.card{background:var(--panel);border:1px solid var(--border);border-radius:17px;padding:17px;box-shadow:0 15px 35px rgba(0,0,0,.22);backdrop-filter:blur(12px)}.stat{position:relative;overflow:hidden}.stat:after{content:"福";position:absolute;right:10px;bottom:-20px;font-size:70px;color:rgba(246,196,83,.07)}.stat .label{color:var(--muted)}.stat .value{font-size:27px;font-weight:800;margin-top:5px}.green{color:var(--green)}.red{color:#ff7777}.goldtxt{color:var(--gold)}
+.two{grid-template-columns:1.5fr 1fr}.three{grid-template-columns:repeat(3,1fr)}
+.chart{height:240px;display:flex;align-items:end;gap:8px;padding:15px 4px 0}.bar{flex:1;background:linear-gradient(180deg,#ff4d42,#9d1017);border-radius:7px 7px 2px 2px;min-height:10px;position:relative}.bar span{position:absolute;bottom:-22px;left:50%;transform:translateX(-50%);font-size:11px;color:var(--muted)}
+.progress{height:9px;background:#32171a;border-radius:20px;overflow:hidden}.progress i{display:block;height:100%;background:linear-gradient(90deg,#e11b23,#f6c453)}
+.page{display:none}.page.active{display:block}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}.input,.select,.textarea{width:100%;background:#140b0d;color:#fff;border:1px solid #704044;border-radius:10px;padding:10px 11px;outline:none}.input:focus,.select:focus,.textarea:focus{border-color:var(--gold)}input[type="date"]{color-scheme:dark;cursor:pointer}input[type="date"]::-webkit-calendar-picker-indicator{filter:sepia(1) saturate(2) hue-rotate(350deg);cursor:pointer}.search{flex:1;min-width:220px}.select{width:auto;min-width:150px}
+.tablewrap{overflow:auto;border:1px solid var(--border);border-radius:14px}.table{width:100%;border-collapse:collapse;min-width:850px}.table th,.table td{padding:12px;border-bottom:1px solid rgba(255,255,255,.08);text-align:left}.table th{color:#ffd98a;background:rgba(255,255,255,.025)}.table tr:hover td{background:rgba(255,60,40,.05)}
+.badge{display:inline-flex;padding:5px 9px;border-radius:99px;font-size:12px;border:1px solid transparent}.ready{color:#8dffc8;background:#083b2a;border-color:#147c58}.hold{color:#ffe3a0;background:#4b3205;border-color:#8e681b}.sold{color:#ffaaa8;background:#4b1115;border-color:#8f2727}.other{color:#ddd;background:#28282c}
+.gameicon{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#ef3028,#f2ad39);display:inline-grid;place-items:center;font-weight:800}
+.rowgame{display:flex;gap:10px;align-items:center}.muted{color:var(--muted);font-size:12px}
+.formgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.field label{display:block;color:#e5c7a6;font-size:13px;margin-bottom:6px}.full{grid-column:1/-1}.money{font-size:20px;font-weight:800}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.72);display:none;align-items:center;justify-content:center;padding:20px;z-index:20}.modal.open{display:flex}.modalbox{width:min(850px,100%);max-height:90vh;overflow:auto;background:#190709;border:1px solid var(--gold);border-radius:20px;padding:20px;box-shadow:0 30px 100px #000}.modalhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}.modalhead h3{margin:0;color:#ffe29a}.close{background:transparent;border:0;color:#fff;font-size:25px;cursor:pointer}
+.list{display:grid;gap:9px}.item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px;border:1px solid rgba(255,255,255,.09);border-radius:12px;background:rgba(255,255,255,.025)}.item strong{display:block}.item small{color:var(--muted)}
+.footer{text-align:center;color:#a88d78;font-size:12px;padding:30px 0}
+@media(max-width:1000px){.app{grid-template-columns:78px 1fr}.sidebar{padding:10px 8px}.brand h1,.brand small,.nav button span,.quote{display:none}.brand .god{font-size:30px}.nav button{text-align:center;font-size:20px}.stats{grid-template-columns:repeat(2,1fr)}.two,.three{grid-template-columns:1fr}}
+@media(max-width:650px){.app{display:block}.sidebar{position:fixed;bottom:0;top:auto;left:0;right:0;width:auto;height:auto;padding:7px;border-right:0;border-top:1px solid var(--border);background:#180506f2}.brand{display:none}.nav{grid-template-columns:repeat(7,1fr)}.nav button{padding:8px;font-size:18px}.nav button span{display:none}main{padding:12px 12px 82px}.stats{grid-template-columns:1fr 1fr}.formgrid{grid-template-columns:1fr}.two,.three{grid-template-columns:1fr}.topbar{align-items:flex-start}.title h2{font-size:20px}}
+</style>
+</head>
+<body>
+<div id="scene" class="night">
+  <div class="sun"></div><div class="moon"></div>
+  <div class="cloud c1"></div><div class="cloud c2"></div>
+  <div class="lantern l1"></div><div class="lantern l2"></div>
+  <div class="coins"><i class="coin"></i><i class="coin"></i><i class="coin"></i></div>
+</div>
+<div class="app">
+<aside class="sidebar">
+  <div class="brand"><div class="god">🧧</div><h1>คลังเจ๋งแจ๋ว</h1><small>เกมดี มีคุณภาพ กำไรแน่นอน</small></div>
+  <nav class="nav">
+    <button class="active" data-page="dashboard">🏮 <span>หน้าหลัก</span></button>
+    <button data-page="accounts">🎮 <span>ไอดีเกม</span></button>
+    <button data-page="investments">💰 <span>การลงทุน</span></button>
+    <button data-page="sales">🧾 <span>รายการขาย</span></button>
+    <button data-page="notes">📝 <span>โน้ต</span></button>
+    <button data-page="history">↩️ <span>ประวัติแก้ไข</span></button>
+    <button data-page="settings">⚙️ <span>ตั้งค่า</span></button>
+  </nav>
+  <div class="quote">“ลงทุนวันนี้<br>กำไรในวันหน้า”<br><span>金運・財運・福</span></div>
+</aside>
+<main>
+<header class="topbar">
+  <div class="title"><h2 id="pageTitle">ภาพรวมร้าน</h2><p id="pageSub">บริหารไอดีเกม เงินลงทุน และกำไรในที่เดียว</p></div>
+  <div class="actions"><button class="btn" id="themeBtn">☀️ กลางวัน</button><button class="btn primary" onclick="openAccount()">＋ เพิ่มไอดี</button></div>
+</header>
+
+<section id="dashboard" class="page active">
+  <div class="grid stats">
+    <div class="card stat"><div class="label">💰 เงินลงทุนรวม</div><div class="value" id="statCost">฿0</div><small class="muted">ต้นทุนที่บันทึกทั้งหมด</small></div>
+    <div class="card stat"><div class="label">🛒 ยอดขายรวม</div><div class="value" id="statSales">฿0</div><small class="muted">รายการที่ขายแล้ว</small></div>
+    <div class="card stat"><div class="label">📈 กำไรสุทธิ</div><div class="value green" id="statProfit">฿0</div><small class="muted">ราคาขาย - ต้นทุน</small></div>
+    <div class="card stat"><div class="label">🎮 ไอดีทั้งหมด</div><div class="value goldtxt" id="statCount">0</div><small class="muted">พร้อมขาย / จอง / ขายแล้ว</small></div>
+  </div>
+  <div class="grid two" style="margin-top:14px">
+    <div class="card"><h3>📊 กำไรจากรายการล่าสุด</h3><div class="chart" id="chart"></div></div>
+    <div class="card"><h3>🧧 สถานะไอดี</h3><div id="statusBox" class="list"></div></div>
+  </div>
+  <div class="grid two" style="margin-top:14px">
+    <div class="card"><h3>🕘 รายการล่าสุด</h3><div id="recent" class="list"></div></div>
+    <div class="card"><h3>✨ วันมงคลของร้าน</h3><p style="color:#ffd98a">ระบบจะเก็บวันที่ซื้อ/ขายและเวลาแก้ไขล่าสุดทุกครั้ง</p><div class="progress"><i style="width:82%"></i></div><p class="muted">บันทึกเป็นระบบ • แก้ไขย้อนหลังได้</p></div>
+  </div>
+</section>
+
+<section id="accounts" class="page">
+  <div class="card"><h3>🎮 ไอดีเกม</h3>
+    <div class="toolbar"><input class="input search" id="accountSearch" placeholder="🔍 ค้นหาเกม / ID / Username / ข้อมูล..."><select class="select" id="gameFilter"><option value="">ทุกเกม</option></select><select class="select" id="categoryFilter"><option value="">ทุกหมวดหมู่</option>${db.settings.categories.map(x=>`<option>${x}</option>`).join('')}</select><select class="select" id="statusFilter"><option value="">ทุกสถานะ</option><option>พร้อมขาย</option><option>จองแล้ว</option><option>ขายแล้ว</option><option>อื่นๆ</option></select></div>
+    <div class="tablewrap"><table class="table"><thead><tr><th>เกม / ข้อมูลเกม</th><th>หมวดหมู่</th><th>ID</th><th>วันที่ซื้อ</th><th>ต้นทุน</th><th>ราคาขาย</th><th>กำไร</th><th>สถานะ</th><th></th></tr></thead><tbody id="accountRows"></tbody></table></div>
+  </div>
+</section>
+
+<section id="investments" class="page"><div class="card"><div class="topbar"><div class="title"><h2>💰 การลงทุน</h2><p>รายการเงินที่นำไปลงทุนกับสินค้า/ไอดี</p></div><button class="btn primary" onclick="openInvestment()">＋ เพิ่มการลงทุน</button></div><div class="tablewrap"><table class="table"><thead><tr><th>รายการ</th><th>ประเภท</th><th>วันที่ลงทุน</th><th>จำนวนเงิน</th><th>สถานะ</th><th></th></tr></thead><tbody id="investmentRows"></tbody></table></div></div></section>
+
+<section id="sales" class="page"><div class="card"><div class="topbar"><div class="title"><h2>🧾 รายการขาย</h2><p>บันทึกยอดขายและกำไรของร้าน</p></div></div><div class="tablewrap"><table class="table"><thead><tr><th>เกม</th><th>ID</th><th>ลูกค้า</th><th>ราคาขาย</th><th>วันที่ขาย</th><th>กำไร</th></tr></thead><tbody id="salesRows"></tbody></table></div></div></section>
+
+<section id="notes" class="page"><div class="card"><div class="topbar"><div class="title"><h2>📝 โน้ต</h2><p>จดข้อมูลแบบสมุดบันทึกและแก้ไขย้อนหลังได้</p></div><button class="btn primary" onclick="openNote()">＋ เพิ่มโน้ต</button></div><div id="notesList" class="list"></div></div></section>
+
+<section id="history" class="page"><div class="card"><h2>↩️ ประวัติการแก้ไข</h2><p class="muted">ทุกครั้งที่เพิ่ม แก้ไข หรือขาย ระบบจะบันทึกไว้</p><div id="historyList" class="list"></div></div></section>
+
+<section id="settings" class="page"><div class="grid two"><div class="card"><h2>⚙️ ตั้งค่าร้าน</h2><div class="formgrid"><div class="field full"><label>ชื่อร้าน</label><input class="input" id="shopName" value="คลังเจ๋งแจ๋ว"></div><div class="field"><label>คำโปรย</label><input class="input" id="shopTag" value="เกมดี มีคุณภาพ กำไรแน่นอน"></div><div class="field"><label>สกุลเงิน</label><select class="select" id="currency"><option>THB (฿)</option></select></div></div><button class="btn primary" style="margin-top:14px" onclick="saveSettings()">💾 บันทึกการตั้งค่า</button></div><div class="card"><h2>🏷️ หมวดหมู่ & แพลตฟอร์ม</h2><p class="muted">เพิ่มหมวดหมู่เกมและแพลตฟอร์มเองได้ รายการจะไปใช้ในฟอร์มไอดีเกมทันที</p><div class="actions"><button class="btn primary" onclick="openOptionManager('category')">🏷️ จัดการหมวดหมู่</button><button class="btn gold" onclick="openOptionManager('platform')">🖥️ จัดการแพลตฟอร์ม</button></div></div><div class="card"><h2>🌗 พื้นหลัง</h2><p>พื้นหลังมีแสง เมฆ โคมแดง และเหรียญเคลื่อนไหว</p><button class="btn gold" onclick="toggleTheme()">สลับกลางวัน / กลางคืน</button></div></div></section>
+
+<div class="footer">คลังเจ๋งแจ๋ว • ระบบจัดการร้านธีมจีนมงคล • ข้อมูลเก็บในเครื่องนี้</div>
+</main></div>
+
+<div class="modal" id="modal"><div class="modalbox"><div class="modalhead"><h3 id="modalTitle">เพิ่มข้อมูล</h3><button class="close" onclick="closeModal()">×</button></div><div id="modalBody"></div></div></div>
+
+<script>
+const $=s=>document.querySelector(s), $$=s=>document.querySelectorAll(s);
+const key='kjj_shop_v1';
+let db=JSON.parse(localStorage.getItem(key)||'null')||{accounts:[
+{id:'001',game:'GTA V',platform:'PC / Steam',server:'ไทย',username:'user_gta',email:'',level:'120',items:'Skin A, Skin B',cost:1000,price:1500,buyDate:'2026-09-20',sellDate:'',status:'พร้อมขาย',note:'ไอดีพร้อมส่ง'},
+{id:'002',game:'FIFA',platform:'PS5 / EA',server:'ไทย',username:'user_fifa',email:'',level:'',items:'Ultimate Team',cost:1300,price:2000,buyDate:'2026-09-22',sellDate:'',status:'จองแล้ว',note:''},
+{id:'003',game:'Roblox',platform:'PC',server:'ไทย',username:'user_roblox',email:'',level:'',items:'ไอเทมสะสม',cost:800,price:1200,buyDate:'2026-09-25',sellDate:'2026-09-26',status:'ขายแล้ว',note:'ขายเรียบร้อย'}
+],investments:[],notes:[],history:[],settings:{shopName:'คลังเจ๋งแจ๋ว',shopTag:'เกมดี มีคุณภาพ กำไรแน่นอน',
+categories:['เกม','ไอดีเกม','ไอเทม','บัญชี','อื่นๆ'],
+platforms:['PC / Steam','PlayStation','Xbox','Nintendo Switch','มือถือ / Mobile','อื่นๆ']}};
+db.accounts.forEach(a=>{if(!a.category)a.category='ไอดีเกม';if(!a.platform)a.platform='PC / Steam'});
+if(!db.settings.categories)db.settings.categories=['เกม','ไอดีเกม','ไอเทม','บัญชี','อื่นๆ'];
+if(!db.settings.platforms)db.settings.platforms=['PC / Steam','PlayStation','Xbox','Nintendo Switch','มือถือ / Mobile','อื่นๆ'];
+function save(){localStorage.setItem(key,JSON.stringify(db));renderAll()}
+function money(n){return new Intl.NumberFormat('th-TH',{style:'currency',currency:'THB',maximumFractionDigits:0}).format(Number(n)||0)}
+function dateTH(v){if(!v)return '-';const d=new Date(v+'T00:00:00');return d.toLocaleDateString('th-TH',{day:'2-digit',month:'2-digit',year:'2-digit'})}
+function now(){return new Date().toLocaleString('th-TH',{dateStyle:'short',timeStyle:'short'})}
+function log(action,detail){db.history.unshift({action,detail,time:now()});db.history=db.history.slice(0,100)}
+function badge(s){let c=s==='พร้อมขาย'?'ready':s==='จองแล้ว'?'hold':s==='ขายแล้ว'?'sold':'other';return `<span class="badge ${c}">${s}</span>`}
+function nav(page){$$('.page').forEach(x=>x.classList.toggle('active',x.id===page));$$('.nav button').forEach(x=>x.classList.toggle('active',x.dataset.page===page));const t={dashboard:['ภาพรวมร้าน','บริหารไอดีเกม เงินลงทุน และกำไรในที่เดียว'],accounts:['ไอดีเกม','คลังข้อมูลเกมและไอดี แก้ไขย้อนหลังได้'],investments:['การลงทุน','บันทึกเงินลงทุนและต้นทุน'],sales:['รายการขาย','ประวัติยอดขายและกำไร'],notes:['โน้ต','สมุดบันทึกของร้าน'],history:['ประวัติแก้ไข','ตรวจสอบการเปลี่ยนแปลงย้อนหลัง'],settings:['ตั้งค่า','ตั้งค่าร้านและพื้นหลัง']}[page];$('#pageTitle').textContent=t[0];$('#pageSub').textContent=t[1]}
+$$('.nav button').forEach(b=>b.onclick=()=>nav(b.dataset.page));
+function openModal(title,body){$('#modalTitle').textContent=title;$('#modalBody').innerHTML=body;$('#modal').classList.add('open')}
+function closeModal(){$('#modal').classList.remove('open')}
+function openAccount(id=''){const a=db.accounts.find(x=>x.id===id)||{id:'',game:'',category:'ไอดีเกม',platform:'PC / Steam',server:'ไทย',username:'',email:'',level:'',items:'',cost:'',price:'',buyDate:new Date().toISOString().slice(0,10),sellDate:'',status:'พร้อมขาย',note:'',image:'',slip:''};openModal(id?'✏️ แก้ไขไอดีเกม':'➕ เพิ่มไอดีเกม',`
+<div class="formgrid">
+<div class="field"><label>ชื่อเกม *</label><input class="input" id="f_game" value="${a.game}"></div>
+<div class="field"><label>แพลตฟอร์ม</label><div style="display:flex;gap:6px"><select class="select" style="flex:1;width:100%" id="f_platform">${db.settings.platforms.map(x=>`<option>${x}</option>`).join('')}</select><button type="button" class="btn" onclick="closeModal();openOptionManager('platform')">＋</button></div></div>
+<div class="field"><label>หมวดหมู่ *</label><div style="display:flex;gap:6px"><select class="select" style="flex:1;width:100%" id="f_category">${db.settings.categories.map(x=>`<option>${x}</option>`).join('')}</select><button type="button" class="btn" onclick="closeModal();openOptionManager('category')">＋</button></div></div>
+<div class="field"><label>เซิร์ฟเวอร์</label><input class="input" id="f_server" value="${a.server}"></div>
+<div class="field"><label>รหัสไอดี *</label><input class="input" id="f_id" value="${a.id}"></div>
+<div class="field"><label>Username</label><input class="input" id="f_user" value="${a.username}"></div>
+<div class="field"><label>อีเมล</label><input class="input" id="f_email" value="${a.email}"></div>
+<div class="field"><label>เลเวล</label><input class="input" id="f_level" value="${a.level}"></div>
+<div class="field"><label>📅 วันที่ซื้อ</label><input class="input" type="date" id="f_buy" value="${a.buyDate}" title="กดเพื่อเลือกวันที่จากปฏิทิน"></div>
+<div class="field"><label>หมวดหมู่</label><input class="input" value="${a.category||'ไอดีเกม'}" disabled></div>
+<div class="field full"><label>ไอเทม / ของที่มี</label><input class="input" id="f_items" value="${a.items}"></div>
+<div class="field"><label>ต้นทุน (บาท) *</label><input class="input" type="number" id="f_cost" value="${a.cost}"></div>
+<div class="field"><label>ราคาขาย (บาท)</label><input class="input" type="number" id="f_price" value="${a.price}"></div>
+<div class="field"><label>📅 วันที่ขาย</label><input class="input" type="date" id="f_sell" value="${a.sellDate}" title="กดเพื่อเลือกวันที่จากปฏิทิน"></div>
+<div class="field"><label>สถานะ</label><select class="select" id="f_status"><option>พร้อมขาย</option><option>จองแล้ว</option><option>ขายแล้ว</option><option>อื่นๆ</option></select></div>
+<div class="field full"><label>โน้ต / รายละเอียดเพิ่มเติม</label><textarea class="textarea" id="f_note" rows="4">${a.note}</textarea></div>
+</div><div class="actions" style="justify-content:flex-end;margin-top:15px"><button class="btn" onclick="closeModal()">ยกเลิก</button><button class="btn primary" onclick="saveAccount('${id}')">💾 บันทึก</button></div>`);
+$('#f_status').value=a.status; $('#f_category').value=a.category||'ไอดีเกม'}
+function saveAccount(oldId){const a={id:$('#f_id').value.trim(),game:$('#f_game').value.trim(),category:$('#f_category').value,platform:$('#f_platform').value,server:$('#f_server').value,username:$('#f_user').value,email:$('#f_email').value,level:$('#f_level').value,items:$('#f_items').value,cost:Number($('#f_cost').value||0),price:Number($('#f_price').value||0),buyDate:$('#f_buy').value,sellDate:$('#f_sell').value,status:$('#f_status').value,note:$('#f_note').value};if(!a.id||!a.game)return alert('กรุณากรอกชื่อเกมและรหัสไอดี');const i=db.accounts.findIndex(x=>x.id===oldId);if(i>=0){db.accounts[i]=a;log('แก้ไขไอดี',`${a.game} #${a.id}`)}else{db.accounts.push(a);log('เพิ่มไอดี',`${a.game} #${a.id}`)}closeModal();save()}
+function delAccount(id){if(confirm('ลบไอดีนี้ใช่หรือไม่?')){const a=db.accounts.find(x=>x.id===id);db.accounts=db.accounts.filter(x=>x.id!==id);log('ลบไอดี',`${a.game} #${id}`);save()}}
+function renderAccounts(){const q=($('#accountSearch')?.value||'').toLowerCase(),gf=$('#gameFilter')?.value||'',cf=$('#categoryFilter')?.value||'',sf=$('#statusFilter')?.value||'';let arr=db.accounts.filter(a=>(!q||JSON.stringify(a).toLowerCase().includes(q))&&(!gf||a.game===gf)&&(!cf||(a.category||'ไอดีเกม')===cf)&&(!sf||a.status===sf));$('#accountRows').innerHTML=arr.map(a=>`<tr><td><div class="rowgame"><span class="gameicon">${a.game.slice(0,1)}</span><div><b>${a.game}</b><div class="muted">${a.platform} • Lv.${a.level||'-'}</div></div></div></td><td>${a.category||'ไอดีเกม'}</td><td>#${a.id}<div class="muted">${a.username||''}</div></td><td>${dateTH(a.buyDate)}</td><td>${money(a.cost)}</td><td>${money(a.price)}</td><td class="${a.price-a.cost>=0?'green':'red'}"><b>${a.price-a.cost>=0?'+':''}${money(a.price-a.cost)}</b></td><td>${badge(a.status)}</td><td><button class="btn" onclick="openAccount('${a.id}')">✏️</button> <button class="btn" onclick="delAccount('${a.id}')">🗑️</button></td></tr>`).join('')||'<tr><td colspan="9" class="muted">ยังไม่มีข้อมูล</td></tr>';const games=[...new Set(db.accounts.map(a=>a.game))];$('#gameFilter').innerHTML='<option value="">ทุกเกม</option>'+games.map(g=>`<option>${g}</option>`).join(''); const currentCat=$('#categoryFilter')?.value||''; $('#categoryFilter').innerHTML='<option value="">ทุกหมวดหมู่</option>'+db.settings.categories.map(c=>`<option>${c}</option>`).join(''); if(db.settings.categories.includes(currentCat))$('#categoryFilter').value=currentCat}
+$('#accountSearch').oninput=renderAccounts;$('#gameFilter').onchange=renderAccounts;$('#categoryFilter').onchange=renderAccounts;$('#statusFilter').onchange=renderAccounts;
+
+function openInvestment(){openModal('➕ เพิ่มการลงทุน',`<div class="formgrid"><div class="field full"><label>รายการ</label><input class="input" id="iv_name" placeholder="เช่น ซื้อไอดี GTA V"></div><div class="field"><label>ประเภท</label><input class="input" id="iv_type" value="ไอดีเกม"></div><div class="field"><label>📅 วันที่ลงทุน</label><input class="input" type="date" id="iv_date" value="${new Date().toISOString().slice(0,10)}"></div><div class="field"><label>จำนวนเงิน</label><input class="input" type="number" id="iv_amount"></div><div class="field"><label>สถานะ</label><select class="select" id="iv_status"><option>กำลังลงทุน</option><option>คืนทุนแล้ว</option></select></div><div class="field full"><label>โน้ต</label><textarea class="textarea" id="iv_note" rows="3"></textarea></div></div><div class="actions" style="justify-content:flex-end;margin-top:15px"><button class="btn" onclick="closeModal()">ยกเลิก</button><button class="btn primary" onclick="saveInvestment()">💾 บันทึก</button></div>`)}
+function saveInvestment(){const x={name:$('#iv_name').value,type:$('#iv_type').value,date:$('#iv_date').value,amount:Number($('#iv_amount').value||0),status:$('#iv_status').value,note:$('#iv_note').value};if(!x.name)return alert('กรุณากรอกรายการ');db.investments.push(x);log('เพิ่มการลงทุน',`${x.name} ${money(x.amount)}`);closeModal();save()}
+function renderInvestments(){$('#investmentRows').innerHTML=db.investments.map((x,i)=>`<tr><td><b>${x.name}</b><div class="muted">${x.note||''}</div></td><td>${x.type}</td><td>${dateTH(x.date)}</td><td>${money(x.amount)}</td><td>${badge(x.status==='คืนทุนแล้ว'?'ขายแล้ว':'พร้อมขาย')}</td><td><button class="btn" onclick="db.investments.splice(${i},1);log('ลบการลงทุน','${x.name}');save()">🗑️</button></td></tr>`).join('')||'<tr><td colspan="6" class="muted">ยังไม่มีรายการลงทุน</td></tr>'}
+function renderSales(){const arr=db.accounts.filter(a=>a.status==='ขายแล้ว');$('#salesRows').innerHTML=arr.map(a=>`<tr><td>${a.game}</td><td>#${a.id}</td><td>${a.username||'-'}</td><td>${money(a.price)}</td><td>${dateTH(a.sellDate)}</td><td class="green">+${money(a.price-a.cost)}</td></tr>`).join('')||'<tr><td colspan="6" class="muted">ยังไม่มีรายการขาย</td></tr>'}
+function openNote(i=-1){const n=i>=0?db.notes[i]:{title:'',body:'',date:new Date().toISOString().slice(0,10)};openModal(i>=0?'✏️ แก้ไขโน้ต':'📝 เพิ่มโน้ต',`<div class="formgrid"><div class="field full"><label>หัวข้อ</label><input class="input" id="n_title" value="${n.title}"></div><div class="field"><label>📅 วันที่</label><input class="input" type="date" id="n_date" value="${n.date}"></div><div class="field full"><label>รายละเอียด</label><textarea class="textarea" id="n_body" rows="8">${n.body}</textarea></div></div><div class="actions" style="justify-content:flex-end;margin-top:15px"><button class="btn" onclick="closeModal()">ยกเลิก</button><button class="btn primary" onclick="saveNote(${i})">💾 บันทึกโน้ต</button></div>`)}
+function saveNote(i){const n={title:$('#n_title').value||'ไม่มีหัวข้อ',body:$('#n_body').value,date:$('#n_date').value};if(i>=0){db.notes[i]=n;log('แก้ไขโน้ต',n.title)}else{db.notes.unshift(n);log('เพิ่มโน้ต',n.title)}closeModal();save()}
+function renderNotes(){$('#notesList').innerHTML=db.notes.map((n,i)=>`<div class="item"><div><strong>📝 ${n.title}</strong><small>${dateTH(n.date)} • ${n.body.slice(0,100)}</small></div><div><button class="btn" onclick="openNote(${i})">✏️</button> <button class="btn" onclick="db.notes.splice(${i},1);log('ลบโน้ต','${n.title}');save()">🗑️</button></div></div>`).join('')||'<div class="muted">ยังไม่มีโน้ต</div>'}
+function renderHistory(){$('#historyList').innerHTML=db.history.map(h=>`<div class="item"><div><strong>${h.action}</strong><small>${h.detail}</small></div><small>${h.time}</small></div>`).join('')||'<div class="muted">ยังไม่มีประวัติ</div>'}
+function renderDash(){const cost=db.accounts.reduce((s,a)=>s+a.cost,0),sales=db.accounts.filter(a=>a.status==='ขายแล้ว').reduce((s,a)=>s+a.price,0),profit=db.accounts.filter(a=>a.status==='ขายแล้ว').reduce((s,a)=>s+a.price-a.cost,0);$('#statCost').textContent=money(cost);$('#statSales').textContent=money(sales);$('#statProfit').textContent=money(profit);$('#statCount').textContent=db.accounts.length;const counts=['พร้อมขาย','จองแล้ว','ขายแล้ว'].map(s=>[s,db.accounts.filter(a=>a.status===s).length]);$('#statusBox').innerHTML=counts.map(x=>`<div class="item"><span>${badge(x[0])}</span><b>${x[1]} ไอดี</b></div>`).join('');const last=db.accounts.slice(-7),mx=Math.max(1,...last.map(a=>Math.max(0,a.price-a.cost)));$('#chart').innerHTML=last.map(a=>`<div class="bar" style="height:${Math.max(8,(a.price-a.cost)/mx*190)}px"><span>${a.game.slice(0,6)}</span></div>`).join('');$('#recent').innerHTML=db.accounts.slice().reverse().slice(0,5).map(a=>`<div class="item"><div><strong>${a.game} #${a.id}</strong><small>${a.category||'ไอดีเกม'} • ${dateTH(a.buyDate)} • ต้นทุน ${money(a.cost)}</small></div><b class="green">${a.price-a.cost>=0?'+':''}${money(a.price-a.cost)}</b></div>`).join('')}
+function openOptionManager(type){
+  const isCat=type==='category', title=isCat?'🏷️ จัดการหมวดหมู่เกม':'🖥️ จัดการแพลตฟอร์ม';
+  const arr=isCat?db.settings.categories:db.settings.platforms;
+  openModal(title,`<p class="muted">เพิ่มชื่อใหม่ได้เอง และลบรายการที่ไม่ใช้แล้ว</p>
+  <div style="display:flex;gap:8px;margin:12px 0"><input class="input" id="opt_new" placeholder="${isCat?'เช่น RPG, FPS, MMO':'เช่น Steam Deck, PS4'}"><button class="btn primary" onclick="addOption('${type}')">＋ เพิ่ม</button></div>
+  <div class="list">${arr.map((x,i)=>`<div class="item"><strong>${x}</strong><button class="btn" onclick="deleteOption('${type}',${i})">🗑️</button></div>`).join('')||'<div class="muted">ยังไม่มีรายการ</div>'}</div>
+  <div class="actions" style="justify-content:flex-end;margin-top:15px"><button class="btn" onclick="closeModal()">เสร็จสิ้น</button></div>`)
+}
+function addOption(type){
+  const v=$('#opt_new').value.trim(); if(!v)return;
+  const arr=type==='category'?db.settings.categories:db.settings.platforms;
+  if(!arr.includes(v))arr.push(v); log(type==='category'?'เพิ่มหมวดหมู่':'เพิ่มแพลตฟอร์ม',v); save(); openOptionManager(type)
+}
+function deleteOption(type,i){
+  const arr=type==='category'?db.settings.categories:db.settings.platforms;
+  if(arr.length<=1)return alert('ต้องมีอย่างน้อย 1 รายการ');
+  const v=arr[i]; if(confirm(`ลบ "${v}" ใช่หรือไม่?`)){arr.splice(i,1);log(type==='category'?'ลบหมวดหมู่':'ลบแพลตฟอร์ม',v);save();openOptionManager(type)}
+}
+async function saveSetti
+  const profileFile=document.getElementById('profileImage')?.files?.[0];
+ngs(){db.settings.shopName=$('#shopName').value;db.settings.shopTag=$('#shopTag').value;log('แก้ไขตั้งค่าร้าน',db.settings.shopName);save();alert('บันทึกตั้งค่าแล้ว')}
+function toggleTheme(){document.body.classList.toggle('day');$('#scene').classList.toggle('day');$('#scene').classList.toggle('night');$('#themeBtn').textContent=document.body.classList.contains('day')?'🌙 กลางคืน':'☀️ กลางวัน';localStorage.setItem('themeDay',document.body.classList.contains('day'))}
+$('#themeBtn').onclick=toggleTheme;
+function renderAll(){renderDash();renderAccounts();renderInvestments();renderSales();renderNotes();renderHistory();$('#shopName').value=db.settings.shopName;$('#shopTag').value=db.settings.shopTag}
+if(localStorage.getItem('themeDay')==='true')toggleTheme();renderAll();
+</script>
+</body>
+</html>

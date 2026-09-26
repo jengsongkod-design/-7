@@ -1,6 +1,12 @@
 <!doctype html>
 <html lang="th">
 <head>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#9d1111">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="คลังเจ๋งแจ๋ว">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>คลังเจ๋งแจ๋ว — ระบบจัดการร้าน</title>
@@ -122,7 +128,8 @@ let db=JSON.parse(localStorage.getItem(key)||'null')||{accounts:[
 {id:'001',game:'GTA V',platform:'PC / Steam',server:'ไทย',username:'user_gta',email:'',level:'120',items:'Skin A, Skin B',cost:1000,price:1500,buyDate:'2026-09-20',sellDate:'',status:'พร้อมขาย',note:'ไอดีพร้อมส่ง'},
 {id:'002',game:'FIFA',platform:'PS5 / EA',server:'ไทย',username:'user_fifa',email:'',level:'',items:'Ultimate Team',cost:1300,price:2000,buyDate:'2026-09-22',sellDate:'',status:'จองแล้ว',note:''},
 {id:'003',game:'Roblox',platform:'PC',server:'ไทย',username:'user_roblox',email:'',level:'',items:'ไอเทมสะสม',cost:800,price:1200,buyDate:'2026-09-25',sellDate:'2026-09-26',status:'ขายแล้ว',note:'ขายเรียบร้อย'}
-],investments:[],notes:[],history:[],settings:{shopName:'คลังเจ๋งแจ๋ว',shopTag:'เกมดี มีคุณภาพ กำไรแน่นอน',
+],investments:[],notes:[],history:[],capitalFunds:[],
+settings:{shopName:'คลังเจ๋งแจ๋ว',shopTag:'เกมดี มีคุณภาพ กำไรแน่นอน',
 categories:['เกม','ไอดีเกม','ไอเทม','บัญชี','อื่นๆ'],
 platforms:['PC / Steam','PlayStation','Xbox','Nintendo Switch','มือถือ / Mobile','อื่นๆ']}};
 db.accounts.forEach(a=>{if(!a.category)a.category='ไอดีเกม';if(!a.platform)a.platform='PC / Steam'});
@@ -138,7 +145,7 @@ function nav(page){$$('.page').forEach(x=>x.classList.toggle('active',x.id===pag
 $$('.nav button').forEach(b=>b.onclick=()=>nav(b.dataset.page));
 function openModal(title,body){$('#modalTitle').textContent=title;$('#modalBody').innerHTML=body;$('#modal').classList.add('open')}
 function closeModal(){$('#modal').classList.remove('open')}
-function openAccount(id=''){const a=db.accounts.find(x=>x.id===id)||{id:'',game:'',category:'ไอดีเกม',platform:'PC / Steam',server:'ไทย',username:'',email:'',level:'',items:'',cost:'',price:'',buyDate:new Date().toISOString().slice(0,10),sellDate:'',status:'พร้อมขาย',note:''};openModal(id?'✏️ แก้ไขไอดีเกม':'➕ เพิ่มไอดีเกม',`
+function openAccount(id=''){const a=db.accounts.find(x=>x.id===id)||{id:'',game:'',category:'ไอดีเกม',platform:'PC / Steam',server:'ไทย',username:'',email:'',level:'',items:'',cost:'',price:'',buyDate:new Date().toISOString().slice(0,10),sellDate:'',status:'พร้อมขาย',note:'',image:'',slip:''};openModal(id?'✏️ แก้ไขไอดีเกม':'➕ เพิ่มไอดีเกม',`
 <div class="formgrid">
 <div class="field"><label>ชื่อเกม *</label><input class="input" id="f_game" value="${a.game}"></div>
 <div class="field"><label>แพลตฟอร์ม</label><div style="display:flex;gap:6px"><select class="select" style="flex:1;width:100%" id="f_platform">${db.settings.platforms.map(x=>`<option>${x}</option>`).join('')}</select><button type="button" class="btn" onclick="closeModal();openOptionManager('platform')">＋</button></div></div>
@@ -190,11 +197,60 @@ function deleteOption(type,i){
   if(arr.length<=1)return alert('ต้องมีอย่างน้อย 1 รายการ');
   const v=arr[i]; if(confirm(`ลบ "${v}" ใช่หรือไม่?`)){arr.splice(i,1);log(type==='category'?'ลบหมวดหมู่':'ลบแพลตฟอร์ม',v);save();openOptionManager(type)}
 }
-function saveSettings(){db.settings.shopName=$('#shopName').value;db.settings.shopTag=$('#shopTag').value;log('แก้ไขตั้งค่าร้าน',db.settings.shopName);save();alert('บันทึกตั้งค่าแล้ว')}
+async function saveSetti
+  const profileFile=document.getElementById('profileImage')?.files?.[0];
+ngs(){db.settings.shopName=$('#shopName').value;db.settings.shopTag=$('#shopTag').value;log('แก้ไขตั้งค่าร้าน',db.settings.shopName);save();alert('บันทึกตั้งค่าแล้ว')}
 function toggleTheme(){document.body.classList.toggle('day');$('#scene').classList.toggle('day');$('#scene').classList.toggle('night');$('#themeBtn').textContent=document.body.classList.contains('day')?'🌙 กลางคืน':'☀️ กลางวัน';localStorage.setItem('themeDay',document.body.classList.contains('day'))}
 $('#themeBtn').onclick=toggleTheme;
 function renderAll(){renderDash();renderAccounts();renderInvestments();renderSales();renderNotes();renderHistory();$('#shopName').value=db.settings.shopName;$('#shopTag').value=db.settings.shopTag}
 if(localStorage.getItem('themeDay')==='true')toggleTheme();renderAll();
+</script>
+
+<section id="capitalPage" class="page">
+  <div class="page-head">
+    <div>
+      <h1>💰 เงินทุน</h1>
+      <p>จัดการเงินทุนแยกจากรายการลงทุน พร้อมแก้ไขย้อนหลังได้</p>
+    </div>
+    <button class="primary" onclick="openCapitalModal()">＋ เพิ่มเงินทุน</button>
+  </div>
+
+  <div class="stats-grid"><div class="stat-card"><span>เงินทุนทั้งหมด</span><strong id="dashCapital">฿0</strong></div>
+    <div class="stat-card"><span>ทุนทั้งหมด</span><strong id="capitalTotal">฿0</strong></div>
+    <div class="stat-card"><span>จำนวนรายการ</span><strong id="capitalCount">0</strong></div>
+  </div>
+
+  <div class="panel">
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>วันที่</th><th>รายการ</th><th>แหล่งเงินทุน</th><th>จำนวนเงิน</th><th>หมายเหตุ</th><th>จัดการ</th>
+        </tr></thead>
+        <tbody id="capitalTable"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<div class="modal" id="capitalModal">
+  <div class="modal-card">
+    <div class="modal-head"><h2 id="capitalModalTitle">เพิ่มเงินทุน</h2><button onclick="closeModal('capitalModal')">×</button></div>
+    <input type="hidden" id="capitalId">
+    <div class="form-grid">
+      <label>วันที่<input id="capitalDate" type="date"></label>
+      <label>ชื่อรายการ<input id="capitalName" placeholder="เช่น เติมเงินทุนรอบแรก"></label>
+      <label>แหล่งเงินทุน<input id="capitalSource" placeholder="เช่น เงินเก็บ / ผู้ปกครอง"></label>
+      <label>จำนวนเงิน<input id="capitalAmount" type="number" min="0" step="0.01"></label>
+      <label style="grid-column:1/-1">หมายเหตุ<textarea id="capitalNote"></textarea></label>
+    </div>
+    <div class="modal-actions"><button class="ghost" onclick="closeModal('capitalModal')">ยกเลิก</button><button class="primary" onclick="saveCapital()">บันทึก</button></div>
+  </div>
+</div>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(()=>{}));
+}
 </script>
 </body>
 </html>
